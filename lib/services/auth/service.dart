@@ -2,17 +2,23 @@
 import 'package:flutter/material.dart';
 import 'package:graduan_test/config.dart';
 import 'package:graduan_test/services/api_service.dart';
+import 'package:graduan_test/services/auth/util/auth.dart';
 
 Future<Map<String, dynamic>?> login(
-    BuildContext context) async {
+    BuildContext context, Map<String, dynamic> params) async {
   try {
     final response = await fetchApiData(
-      isDebug: false,
+      isDebug: true,
       context: context,
       method: 'post',
       path: Config.login,
-      params: {},
+      params: params,
+      isApplyFormData: true,
+      isApplyBearerToken: false
     );
+    if(response!= null){
+      AuthService.setAccessToken(response['token']);
+    }
     return response;
   } catch (e) {
     debugPrint(

@@ -21,42 +21,87 @@ class ApiService {
     return _makeRequest(method: 'DELETE', path: path);
   }
 
-  Future<http.Response?> post({required String path, dynamic params, bool isApplyFormData = true}) async {
-    return isApplyFormData ? _sendFormDataRequest(method: 'POST', path: path, body: params) : _sendUrlEncodedRequest(method: 'POST', path: path, body: params);
+  Future<http.Response?> post(
+      {required String path,
+      dynamic params,
+      bool isApplyFormData = true,
+      bool isApplyBearerToken = true}) async {
+    return isApplyFormData
+        ? _sendFormDataRequest(
+            method: 'POST',
+            path: path,
+            body: params,
+            isApplyBearerToken: isApplyBearerToken)
+        : _sendUrlEncodedRequest(
+            method: 'POST',
+            path: path,
+            body: params,
+            isApplyBearerToken: isApplyBearerToken);
   }
 
-  Future<http.Response?> put({required String path, dynamic params}) async {
-    return _sendFormDataRequest(method: 'PUT', path: path, body: params);
+  Future<http.Response?> put(
+      {required String path,
+      dynamic params,
+      bool isApplyBearerToken = true}) async {
+    return _sendFormDataRequest(
+        method: 'PUT',
+        path: path,
+        body: params,
+        isApplyBearerToken: isApplyBearerToken);
   }
 
-  Future<http.Response?> _sendFormDataRequest(
-      {required String method,
-      required String path,
-      required dynamic body}) async {
+  Future<http.Response?> _sendFormDataRequest({
+    required String method,
+    required String path,
+    required Map<String, String> body, // Expecting a Map of form fields
+    required bool isApplyBearerToken,
+  }) async {
     try {
+      // Construct the URI from the path
       final uri = Uri.parse(Config.urls(path));
       var request = http.MultipartRequest(method, uri);
 
-      if (body != null) {
+      // Set the default headers
+      Map<String, String> headers = {
+        HttpHeaders.acceptHeader: "application/json",
+      };
+
+      // If Bearer token should be applied, get it and add to headers
+      if (isApplyBearerToken) {
+        String token = await AuthService.getAccessToken();
+        headers[HttpHeaders.authorizationHeader] = "Bearer $token";
+      }
+
+      // Add the headers to the request
+      request.headers.addAll(headers);
+
+      // Add form data fields to the request (from the 'body')
+      if (body.isNotEmpty) {
         body.forEach((key, value) {
-          if (value is String ||
-              value is int ||
-              value is double ||
-              value is bool) {
-            request.fields[key] = value.toString();
-          } else if (value is List<int>) {
-            request.files.add(http.MultipartFile.fromBytes(
-              key,
-              value,
-              filename: key,
-            ));
-          }
+          // Adding key-value pairs as form fields
+          request.fields[key] = value;
         });
       }
 
+      // Send the request
       final response = await request.send();
 
-      return await http.Response.fromStream(response);
+      print('Response body: ${response}');
+      // Convert the response stream into a http.Response object
+      final data = await http.Response.fromStream(response);
+
+      // Print response body
+      print('Response body: ${data.body}');
+
+      // Handle the response
+      if (data.statusCode == 200) {
+        // Assuming the response is JSON
+        final responseData = jsonDecode(data.body);
+        print('Response data: $responseData');
+      } else {
+        print('Request failed with status: ${data.statusCode}');
+      }
+      return data;
     } catch (e) {
       debugPrint('Error sending FormData request: $e');
       return null;
@@ -69,8 +114,9 @@ class ApiService {
     dynamic body,
   }) async {
     String token = await AuthService.getAccessToken();
+    //always add token
     Map<String, String> headers = {
-      HttpHeaders.contentTypeHeader: "application/json",
+      HttpHeaders.acceptHeader: "application/json",
       HttpHeaders.authorizationHeader: "Bearer $token"
     };
 
@@ -128,6 +174,7 @@ class ApiService {
     required String method,
     required String path,
     required Map<String, dynamic> body,
+    required bool isApplyBearerToken,
   }) async {
     try {
       final uri = Uri.parse(Config.urls(path));
@@ -135,9 +182,14 @@ class ApiService {
         'Content-Type': 'application/x-www-form-urlencoded',
       };
 
+      if (isApplyBearerToken) {
+        String token = await AuthService.getAccessToken();
+        headers[HttpHeaders.authorizationHeader] = "Bearer $token";
+      }
+
       // Encode the parameters into x-www-form-urlencoded format
       final encodedBody = _encodeBody(body);
-      
+
       if (method.toUpperCase() == 'PUT') {
         // For PUT, you might want to use http.put instead
         return await http.put(
@@ -146,7 +198,7 @@ class ApiService {
           body: encodedBody,
         );
       }
-      
+
       final response = await http.post(
         uri,
         headers: headers,
@@ -179,7 +231,7 @@ class ApiService {
       ),
     );
     AuthService.clearPrefs();
-    Navigator.pushNamed(context, '/login/splash');
+    Navigator.pushNamed(context, '/login');
     return _httpResHandling(
         http.Response('{"message": "Error occurred."}', 500));
   }
@@ -200,6 +252,8 @@ Future<T?> fetchApiData<T>(
     required String method,
     Map<String, dynamic>? params,
     T Function(Map<String, dynamic>)? fromJson,
+    bool? isApplyFormData,
+    bool? isApplyBearerToken,
     required bool isDebug}) async {
   try {
     // Initialize ApiService with optional custom URL provider
@@ -212,7 +266,11 @@ Future<T?> fetchApiData<T>(
         response = await apiService.get(path: path);
         break;
       case 'POST':
-        response = await apiService.post(path: path, params: params);
+        response = await apiService.post(
+            path: path,
+            params: params,
+            isApplyFormData: isApplyFormData ?? true,
+            isApplyBearerToken: isApplyBearerToken ?? true);
         break;
       case 'PUT':
         response = await apiService.put(path: path, params: params);

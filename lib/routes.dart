@@ -2,12 +2,15 @@
 
 
 import 'package:flutter/widgets.dart';
-import 'package:graduan_test/main.dart';
+import 'package:graduan_test/screen/home_page.dart';
+import 'package:graduan_test/screen/login_page.dart';
 import 'package:graduan_test/utils/loading.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 final Map<String, WidgetBuilder> routes = {
-  '/': (context) => const MyHomePage(title: '',),
+  '/home': (context) => const MyHomePage(),
+  '/login': (context) => const LoginPage(),
+  '/': (context) => const LoginPage(),
 };
 
 // Function to build protected routes
