@@ -78,7 +78,8 @@ class _MyHomePageState extends State<MyHomePage> {
                 itemBuilder: (context2, index) {
                   final itemData = data[index];
                   return Container(
-                    padding: const EdgeInsets.all(10),
+                    padding: const EdgeInsets.only(top:10,bottom:10,left: 15,right: 15),
+                    height: 75,
                     decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(15),
                         color: Colors.amberAccent.withOpacity(0.35)),
