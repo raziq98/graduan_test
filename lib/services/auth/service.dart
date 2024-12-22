@@ -27,20 +27,22 @@ Future<Map<String, dynamic>?> login(
   }
 }
 
-Future<Map<String, dynamic>?> logout(
+Future<bool> logout(
     BuildContext context) async {
   try {
-    final response = await fetchApiData(
+    final response = await fetchLogoutRes(
       isDebug: false,
       context: context,
       method: 'post',
       path: Config.logOut,
       params: {},
+      isApplyFormData: false,
+      isApplyBearerToken: true,
     );
     return response;
   } catch (e) {
     debugPrint(
         'auth.logout error: $e');
-    return null;
+    return false;
   }
 }

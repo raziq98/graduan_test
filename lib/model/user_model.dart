@@ -1,5 +1,7 @@
+import 'package:intl/intl.dart';
+
 class UserData {
-  final String id;
+  final int id;
   final String name;
   final String email;
   final String emailVerifiedAt;
@@ -20,9 +22,17 @@ class UserData {
       id: json['id'],
       name: json['name'],
       email: json['email'],
-      emailVerifiedAt: json['email_verified_at'],
-      createdAt: json['created_at'],
-      updatedAt: json['updated_at'],
+      emailVerifiedAt: formatDate(json['email_verified_at']),
+      createdAt: formatDate(json['created_at']),
+      updatedAt: formatDate(json['updated_at']),
     );
+  }
+
+  static String formatDate(String dateStr) {
+    DateTime dateTime = DateTime.parse(dateStr);
+
+    DateFormat dateFormat = DateFormat("dd/MM/yyyy HH:mm");
+
+    return dateFormat.format(dateTime);
   }
 }

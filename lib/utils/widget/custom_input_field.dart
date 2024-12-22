@@ -5,6 +5,7 @@ class CustomInputField extends StatelessWidget {
   final String hintText;
   final Function(String?)? onSaved;
   final TextInputType keyboardType;
+  final int? maxLines;
 
   const CustomInputField({
     super.key,
@@ -12,6 +13,7 @@ class CustomInputField extends StatelessWidget {
     required this.hintText,
     this.onSaved,
     this.keyboardType = TextInputType.text,
+    this.maxLines = 1,
   });
 
   @override
@@ -28,6 +30,7 @@ class CustomInputField extends StatelessWidget {
         child: TextFormField(
           controller: controller,
           onSaved: onSaved,
+          maxLines: maxLines,
           keyboardType: keyboardType,
           decoration: InputDecoration(
               hintText: hintText,

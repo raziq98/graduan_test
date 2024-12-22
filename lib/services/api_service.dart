@@ -6,6 +6,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:graduan_test/config.dart';
 import 'package:graduan_test/services/auth/util/auth.dart';
+import 'package:graduan_test/services/auth/util/user_data_storage.dart';
 import 'package:http/http.dart' as http;
 
 class ApiService {
@@ -43,7 +44,7 @@ class ApiService {
       {required String path,
       dynamic params,
       bool isApplyBearerToken = true}) async {
-    return _sendFormDataRequest(
+    return _sendUrlEncodedRequest(
         method: 'PUT',
         path: path,
         body: params,
@@ -302,4 +303,36 @@ Future<T?> fetchApiData<T>(
     debugPrint('Exception occurred: $e');
   }
   return null;
+}
+
+Future<bool> fetchLogoutRes({
+  required BuildContext context,
+  required String path,
+  required String method,
+  Map<String, dynamic>? params,
+  bool? isApplyFormData,
+  bool? isApplyBearerToken,
+  required bool isDebug,
+}) async {
+  try {
+    // Initialize ApiService with optional custom URL provider
+    final apiService = ApiService(context);
+
+    http.Response? response = await apiService.post(
+      path: path,
+      params: params,
+      isApplyFormData: isApplyFormData ?? false,
+      isApplyBearerToken: isApplyBearerToken ?? true,
+    );
+
+    if (response != null && response.statusCode == 204) {
+      await AuthService().setLogout();
+      return true;
+    } else {
+      return false;
+    }
+  } catch (e) {
+    debugPrint('Exception occurred: $e');
+    return false;
+  }
 }

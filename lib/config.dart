@@ -4,7 +4,7 @@ class Config {
   static const login = 'login';
   static const logOut = 'dashboard/logout';
 
-  static const useerInfo = 'dashboard/profile';
+  static const userInfo = 'dashboard/profile';
 
   static const createPost = 'dashboard/post';
   static const postList = 'post';

@@ -16,11 +16,11 @@ class AuthService {
 
   // SSO
   static Future<void> setLogin() async {
-    UserDataStorage.saveUserData(true, await getAccessToken());
+    await UserDataStorage.saveUserData(true, await getAccessToken());
   }
 
-  static Future<void> setLogout() async {
-    UserDataStorage.saveUserData(false, '');
+  Future<void> setLogout() async {
+    await UserDataStorage.saveUserData(false, '');
   }
 
   static Future<bool> getLogin(BuildContext context) async {

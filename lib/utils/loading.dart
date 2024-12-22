@@ -9,7 +9,6 @@ class LoadingAnimation extends StatelessWidget {
   Widget build(BuildContext context) {
     return CircularProgressIndicator(
       strokeWidth: stroke ?? 4.0,
-      // color: ThemeConstant.bluefitBlue,
     );
   }
 }
